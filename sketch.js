@@ -6,11 +6,34 @@ var score, coin, coinSprite;
 var gameState="level1";
 var back;
 var count=0;
+var levelComplete, levelFailed, levelSprite;
 function preload()
 {
-  track = loadImage("Images/desertroadOFFICIAL.png");
+  track1 = loadImage("Images/desertroadOFFICIAL.png");
   track2 = loadImage("Images/map1OFFICIAL.png");
-	playerCar = loadImage("Images/carOfficial.png");
+  //track3 = loadImage("Images/track.jpg");
+  playerCar = loadImage("Images/carOfficial.png");
+  
+  /*playerSprite=loadAnimation("Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_0.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_1.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_2.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_3.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_4.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_3.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_5.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_6.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_7.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_8.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_9.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_10.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_11.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_13.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_14.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_15.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_16.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_17.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_18.png",				
+"Images/playerOFFICIAL/knife/meleeattack/survivor-meleeattack_knife_19.png");*/
 
   zombieMove = loadAnimation("Images/zombieOFFICIAL/Move/skeleton-move_0.png",
   "Images/zombieOFFICIAL/Move/skeleton-move_1.png",
@@ -56,6 +79,8 @@ function preload()
   "Images/ScoreOFFICIAL/Coin6.png",
   "Images/ScoreOFFICIAL/Coin1.png")
 
+  levelComplete = loadImage("Images/levelCompleteScreenOFFICIAL.png");
+
  
 }
 
@@ -63,20 +88,18 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   
   score = 0
-  
+  //console.log("in setup:"+windowWidth/2+","+windowHeight)
   back1 = createSprite(windowWidth/2, windowHeight, 1000,500);
-  back1.addImage("track1",track);
+  back1.addImage("track1",track1);
   back1.addImage("track2",track2);
   back1.scale = 0.9;
 
   player = createSprite(windowWidth/2, windowHeight/2+4200,20,50);
   player.addImage("player_driving", playerCar);
   player.scale = 0.05;
-
+  zombieGroup= new Group();
 
   
-
-  zombieGroup= new Group();
 
   spawnZombies();
   
@@ -84,63 +107,110 @@ function setup() {
 
 function draw() {
   rectMode(CENTER);
-  
-  background(125);
-
+  background("white");
   camera.position.x=windowWidth/2;
   camera.position.y=player.y;
 
+ drawSprites();
+  
   if(gameState === "level1")
   {
-    coinSprite = createSprite(camera.position.x - 500, camera.position.y - 400);
-    coinSprite.addAnimation("coin image", coin);
+    back1.changeImage("track1",track1);
+
    
+    if(keyDown(UP_ARROW))
+    {
+      player.y = player.y - 10;
+      //player.changeImage("")
+    }
   
-    controlPlayer();
+    if(keyDown(LEFT_ARROW))
+    {
+      player.x = player.x - 5;
+    }
   
-    
+    if(keyDown(RIGHT_ARROW))
+    {
+      player.x = player.x + 5;
+    }
+
+
+  
     for(var i=0;i<zombieGroup.length;i++)
     {
       if(zombieGroup.get(i).isTouching(player))
       {
-      //  console.log(zombieGroup.get(i))
-       // zombieGroup.get(i).scale = zombieGroup.get(i).scale - 0.01
         zombieGroup.get(i).destroy();
         score = score + 10
   
+      }   
       }
-    
-     
-      if(player.y-zombieGroup.get(i).y < 300)
+      for(var i=0;i<zombieGroup.length;i++)
       {
-       
-        //zombieGroup.get(i).changeAnimation("moving", zombieMove);
-        zombieGroup.get(i).velocityY = 3;
-       
+        if(zombieGroup.length >0 )
+        {
+          if(player.y-zombieGroup.get(i).y < 300)
+          {
+          
+            zombieGroup.get(i).changeAnimation("moving", zombieMove);
+            zombieGroup.get(i).velocityY = 3; 
+          }
+      }
+
+      if(gameState === "level2")
+      {
+        zombieGroup.get(i).destroy();
       }
     }
-  
+    //console.log(player.y);
     if(player.y < -2750)
     {
-     /* camera.position.x=windowWidth/2;
-      camera.position.y=-2750;*/
-      console.log("level2 called")
-      gameState= "level2";
+      console.log(player.y)
+      //gameState= "level2";
+
+      camera.position.x=windowWidth/2;
+      camera.position.y=-2750;
+
+      levelSprite = createSprite(windowWidth/2, -2750);
+      levelSprite.addImage("Level Passed", levelComplete);
+      levelSprite.scale = 0.5
   
     }
   }
-  else  if(gameState === "level2")
+  else if(gameState === "level2")
   {
-    controlPlayer();
-    console.log("I am in level2 ")
-   //var  back = createSprite(windowWidth/2, windowHeight, 1000,500);
+
+    back1.changeImage("track2",track2);
+    
     text("i am in level2")
-    //back.scale = 0.9;
+    back1.scale = 1.1;
+
+    if(keyDown(UP_ARROW))
+    {
+      console.log("UP Pressed")
+      player.y = player.y - 300;
+    }
+  
+    if(keyDown(LEFT_ARROW))
+    {
+      player.x = player.x - 5;
+    }
+  
+    if(keyDown(RIGHT_ARROW))
+    {
+      player.x = player.x + 5;
+    }
+
+    if(keyDown(DOWN_ARROW))
+    {
+      player.y = player.y + 5;
+    }
   }
   
 
  
-  drawSprites();
+  /*coinSprite = createSprite(camera.position.x - 500, camera.position.y - 400);
+  coinSprite.addAnimation("coin image", coin);*/
 
   fill("white");
   textSize(20);
@@ -167,60 +237,17 @@ function controlPlayer()
 }
 function spawnZombies() 
 {
-	var zombie1=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie2=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie3=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie4=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie5=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie6=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie7=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie8=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie9=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie10=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie11=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie12=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie13=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie14=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie15=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie16=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie17=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie18=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie19=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie20=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-var zombie21=createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
-
-zombie1.addAnimation("idle",zombieIdle);
-zombie2.addAnimation("idle",zombieIdle);
-zombie3.addAnimation("idle",zombieIdle);
-zombie4.addAnimation("idle",zombieIdle);
-zombie5.addAnimation("idle",zombieIdle);
-zombie6.addAnimation("idle",zombieIdle);
-zombie7.addAnimation("idle",zombieIdle);
-zombie8.addAnimation("idle",zombieIdle);
-zombie9.addAnimation("idle",zombieIdle);
-zombie10.addAnimation("idle",zombieIdle);
-zombie11.addAnimation("idle",zombieIdle);
-zombie12.addAnimation("idle",zombieIdle);
-zombie13.addAnimation("idle",zombieIdle);
-zombie14.addAnimation("idle",zombieIdle);
-zombie15.addAnimation("idle",zombieIdle);
-zombie16.addAnimation("idle",zombieIdle);
-zombie17.addAnimation("idle",zombieIdle);
-zombie18.addAnimation("idle",zombieIdle);
-zombie19.addAnimation("idle",zombieIdle);
-zombie20.addAnimation("idle",zombieIdle);
-zombie21.addAnimation("idle",zombieIdle);
-  /*for (var i=0; i<100; i++) 
+  for (var i=0; i<100; i++) 
   {
     
 	  var zombie = createSprite(Math.round(random(windowWidth/2-100,windowWidth/2+100)),Math.round(random(-2500, 4000)));
 	
     zombie.addAnimation("idle",zombieIdle);
+    zombie.addAnimation("moving", zombieMove);
     zombie.rotation=90;
 	  zombie.scale = 0.3;
 	
 	  //add each zombie to the group
 	  zombieGroup.add(zombie);
-  }*/
+  }
 }
-
